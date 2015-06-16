@@ -27,8 +27,11 @@ task :parse_results, [:limit] do |t, args|
 
   headings = ["Time", "File", "Class"]
 
+  min_time = results.min{|r| r.time.to_f}.time.to_f
+  max_time = results.max{|r| r.time.to_f}.time.to_f
+
   rows = results[0..limit].map do |result|
-    [result.time, result.file, result.name]
+    [Paint[result.time, color(min_time, max_time, result.time)], result.file, result.name]
   end
 
   puts Terminal::Table.new :headings => headings, :rows => rows
@@ -36,4 +39,10 @@ task :parse_results, [:limit] do |t, args|
   if (results.count > limit)
     print "(#{results.count - limit} truncated)\n"
   end
+end
+
+def color(min, max, value)
+  weight = (value.to_f - min.to_f) / (max.to_f - min.to_f)
+
+  [255 * (1 - weight), 255 * weight, 0]
 end
