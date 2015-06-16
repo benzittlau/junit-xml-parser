@@ -25,10 +25,10 @@ task :parse_results, [:limit] do |t, args|
 
   limit = args.to_hash.fetch(:limit, results.count).to_i
 
-  headings = ["Time", "Class", "File"]
+  headings = ["Time", "File", "Class"]
 
   rows = results[0..limit].map do |result|
-    [result.time, result.name, result.file]
+    [result.time, result.file, result.name]
   end
 
   puts Terminal::Table.new :headings => headings, :rows => rows
