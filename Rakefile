@@ -6,8 +6,10 @@ Bundler.require(:default)
 ################## TASKS
 ################################################################################
 
-task :parse_results, [:limit] do |t, args|
-  results = get_results.sort_by! do |result|
+task :parse_results, [:limit, :dir] do |t, args|
+  dir = args.to_hash.fetch(:dir, 'input')
+
+  results = get_results(dir).sort_by! do |result|
     result.time.to_f
   end.reverse
 
@@ -29,8 +31,10 @@ task :parse_results, [:limit] do |t, args|
   end
 end
 
-task :parse_results_by_file, [:limit, :sort] do |t, args|
-  results_by_file = get_results.group_by{|result| result.file}.map do |file, results|
+task :parse_results_by_file, [:limit, :sort, :dir] do |t, args|
+  dir = args.to_hash.fetch(:dir, 'input')
+
+  results_by_file = get_results(dir).group_by{|result| result.file}.map do |file, results|
     time = results.map{|r| r.time}.inject(:+)
     average = time / results.count
     ResultForFile.new(
@@ -73,10 +77,10 @@ end
 Result = Struct.new(:class, :name, :file, :time)
 ResultForFile = Struct.new(:file, :time, :average, :count)
 
-def get_results
+def get_results(dir = "input")
   results = []
 
-  Dir.glob("input/*.xml") do |file|
+  Dir.glob("#{dir}/*.xml") do |file|
     doc = Nokogiri::XML(File.open(file))
     results += doc.xpath("//testcase[not(skipped)]").map do |node|
       Result.new(
