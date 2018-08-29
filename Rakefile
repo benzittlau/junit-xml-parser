@@ -54,10 +54,12 @@ task :parse_results_by_file, [:limit, :sort, :dir] do |t, args|
 
   min_time = results_by_file.min_by{|r| r.time}.time
   max_time = results_by_file.max_by{|r| r.time}.time
-
+  min_average_time = results_by_file.min_by{|r| r.average}.time
+  max_average_time = results_by_file.max_by{|r| r.average}.time
+  
   rows = results_by_file[0..limit].map do |result|
     [Paint[result.time.round(2), color(min_time, max_time, result.time)],
-     Paint[result.average.round(2), color(min_time, max_time, result.average)],
+     Paint[result.average.round(2), color(min_average_time, max_average_time, result.average)],
      result.count,
      result.file
     ]
@@ -81,6 +83,7 @@ def get_results(dir = "input")
   results = []
 
   Dir.glob("#{dir}/*.xml") do |file|
+    puts "> FILE: #{file}"
     doc = Nokogiri::XML(File.open(file))
     results += doc.xpath("//testcase[not(skipped)]").map do |node|
       Result.new(
